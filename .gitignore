@@ -1,0 +1,27 @@
+# Virtual environment
+venv/
+env/
+.env/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Coverage reports
+.coverage
+htmlcov/
+
+# IDE files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Index file (submitted separately, not in repo)
+data/*.json
+data/*.pkl
