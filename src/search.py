@@ -11,9 +11,9 @@ def print_query(index:dict, query_word:str) -> None:
     result = index[query_word]
 
     for url, data in result.items():
-        print(f"url: {url} \n")
+        print(f"URL: {url} \n")
         print(f"Frequency: {data['frequency']}")
-        print(f"Position: {data['positions']}")
+        print(f"Positions: {data['positions']}")
 
     print()
 
