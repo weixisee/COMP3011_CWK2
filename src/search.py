@@ -11,11 +11,12 @@ def print_query(index:dict, query_word:str) -> None:
     result = index[query_word]
 
     for url, data in result.items():
-        print(f"URL: {url} \n")
+        print(f"URL: {url}")
         print(f"Frequency: {data['frequency']}")
         print(f"Positions: {data['positions']}")
+        print()
 
-    print()
+
 
 
 # # find a given query phrase in the inverted index
@@ -31,10 +32,12 @@ def find_words(index:dict, query_words: list[str]) -> list[str]:
 
     for word in words:
         if word not in index:
+            print(f"{word} not found in index")
             return []
         results_pages.append(set(index[word].keys()))
 
     if len(results_pages) == 1:
         return list(results_pages[0])
     
+    # for conjuctive queries
     return list(set.intersection(*results_pages))
