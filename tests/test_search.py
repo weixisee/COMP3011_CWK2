@@ -9,20 +9,21 @@ sys.path.insert(
 )
 
 from search import find_words, print_query
+from indexer import build_index
 
 # define mock data for inverted index
 @pytest.fixture
 def sample_index():
     return {
         "life": {
-            "url1": {"frequency": 2, "positions": [0, 3]},
-            "url2": {"frequency": 1, "positions": [5]},
+            "url1": {"frequency": 2, "positions": [0, 3], "tf_idf": 0.4},
+            "url2": {"frequency": 1, "positions": [5], "tf_idf": 0.2},
         },
         "beautiful": {
-            "url1": {"frequency": 1, "positions": [2]},
+            "url1": {"frequency": 1, "positions": [2], "tf_idf": 0.3},
         },
         "good": {
-            "url2": {"frequency": 1, "positions": [1]},
+            "url2": {"frequency": 1, "positions": [1], "tf_idf": 0.3},
         },
     }
 
@@ -81,4 +82,16 @@ def test_find_empty_query(sample_index):
 def test_find_case_insensitive(sample_index):
     result = find_words(sample_index, ["LiFe"])
     assert set(result) == {"url1", "url2"}
+
+    
+def test_find_words_returns_ranked_results():
+    pages = {
+        "url1": "<html><body>life life life</body></html>",
+        "url2": "<html><body>life</body></html>"
+    }
+
+    index = build_index(pages)
+    result = find_words(index, ["life"])
+
+    assert result[0] == "url2"
 
