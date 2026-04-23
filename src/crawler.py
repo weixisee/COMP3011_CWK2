@@ -11,17 +11,22 @@ BASE_URL = "https://quotes.toscrape.com/"
 POLITENESS_WINDOW = 6
 
 
-def fetch_page(url:str) -> str | None:
-    
-    try:
-        response = requests.get(url, timeout=10)
-        if response.status_code == 200:
-            return response.text
-        print(f"[WARNING] {url} returned HTTP {response.status_code}.\n")
-        return None
-    except requests.exceptions.RequestException as e:
-        print(f"[ERROR] Could not fetch {url}: {e}")
-        return None
+def fetch_page(url:str, retries: int = 3) -> str | None:
+
+    for attempt in range (1, retries + 1):
+        try:
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                return response.text
+            print(f"[WARNING] {url} returned HTTP {response.status_code}.\n")
+            return None
+        except requests.exceptions.RequestException as e:
+            print(f"[WARNING] Attempt {attempt}/{retries} failed for {url} : {e}")
+            if attempt < retries:
+                time.sleep(2)
+
+    print(f"[ERROR] All {retries} attempts failed to fetch {url}")
+    return None
 
 def parse_page(html:str) -> BeautifulSoup:
 
