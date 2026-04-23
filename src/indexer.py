@@ -1,6 +1,7 @@
 import re
 import json
 from bs4 import BeautifulSoup
+import math
 
 
 # define stopwords
@@ -44,6 +45,8 @@ def tokenise(text: str) -> list[str]:
 def build_index(pages: dict[str, str]) -> dict:
 
     index = {}
+    # find the total number of pages
+    total_pages = len(pages)
 
     for url, html in pages.items():
 
@@ -56,6 +59,11 @@ def build_index(pages: dict[str, str]) -> dict:
         # tokenise into clean words
         tokens = tokenise(text)
 
+        total_tokens = len(tokens)
+
+        if total_tokens == 0:
+            continue
+
         # Build postings for this document 
         # Each token gets its position recorded (0-based word index)
         for position, word in enumerate(tokens):
@@ -63,10 +71,23 @@ def build_index(pages: dict[str, str]) -> dict:
                 index[word] = {}
 
             if url not in index[word]:
-                index[word][url] = {"frequency": 0, "positions": []}
+                index[word][url] = {"frequency": 0, "positions": [], "tf_idf": 0.0}
 
             index[word][url]["frequency"] += 1
             index[word][url]["positions"].append(position)
+    
+    # using the frequencies of each word, compute TF-IDF
+    for word, postings in index.items():
+        # compute IDF: how rare is this word across all documents
+        docs_containing_word = len(postings)
+        idf = math.log(total_pages / docs_containing_word)
+
+        for url, data in postings.items():
+            total_tokens = len(tokenise(extract_text(pages[url])))
+            # compute TF
+            tf = data["frequency"]/total_tokens if total_tokens > 0 else 0
+            data["tf_idf"] = round(tf * idf, 4)
+
 
     return index
 

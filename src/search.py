@@ -39,5 +39,13 @@ def find_words(index:dict, query_words: list[str]) -> list[str]:
     if len(results_pages) == 1:
         return list(results_pages[0])
     
+    # conjustive queries
+    intersected_pages = set.intersection(* results_pages)
+
+    def score(url):
+        return sum(index[word][url]["tf_idf"] for word in words if url in index[word])
+    
     # for conjuctive queries
-    return list(set.intersection(*results_pages))
+    # return list(set.intersection(*results_pages))
+    # return in highly relevance to lower relevance
+    return sorted(intersected_pages, key=score, reverse=True)
