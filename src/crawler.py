@@ -46,6 +46,10 @@ def extract_links (soup: BeautifulSoup, current_url: str) -> list[str]:
     for tag in soup.find_all("a", href=True):
         absolute = urljoin(current_url, tag["href"])
         parsed = urlparse(absolute)
+
+        # if "/author/" in absolute or "/tag/" in absolute:
+        #     continue
+
         if parsed.netloc == urlparse(BASE_URL).netloc:
             links.append(absolute)
         

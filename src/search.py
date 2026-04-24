@@ -1,11 +1,22 @@
 from indexer import tokenise
+import difflib
+
+# function to get query suggestion
+def get_suggestion(word: str, index: dict) -> str | None:
+
+    suggestions = difflib.get_close_matches(word, index.keys(), n=1, cutoff=0.6)
+    return suggestions[0] if suggestions else None
 
 def print_query(index:dict, query_word:str) -> None:
 
     query_word = query_word.lower()
 
     if query_word not in index:
-        print(f"{query_word}  not in index.\n")
+        suggestion = get_suggestion(query_word, index)
+        if suggestion:
+            print(f"[ERROR]: Could not find '{query_word}' in index. Did you mean: '{suggestion}'?\n")
+        else:
+            print(f"{query_word}  not in index.\n")
         return 
     
     result = index[query_word]
@@ -36,7 +47,11 @@ def find_words(index:dict, query_words: list[str]) -> list[str]:
 
     for word in words:
         if word not in index:
-            print(f"{word} not found in index")
+            suggestion = get_suggestion(word,  index)
+            if suggestion:
+                print(f"[ERROR]: Could not find '{word}'. Did you mean: '{suggestion}'?\n")
+            else:
+                print(f"{word} not found in index")
             return []
         results_pages.append(set(index[word].keys()))
     

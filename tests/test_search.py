@@ -8,7 +8,7 @@ sys.path.insert(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
 )
 
-from search import find_words, print_query
+from search import get_suggestion, find_words, print_query
 from indexer import build_index, save_index, load_index
 
 # define mock data for inverted index
@@ -164,3 +164,37 @@ def test_integration_build_load_print_find(tmp_path, capsys):
     result = find_words(loaded_index, ["life", "good"])
     assert result == ["url2"]
 
+# ─────────────────────────────────────────────
+# query suggestion function
+# ─────────────────────────────────────────────
+
+def test_get_suggestion_close_match(sample_index):
+    
+    result = get_suggestion("lifee", sample_index)
+    assert result == "life"
+
+def test_get_suggestion_no_match(sample_index):
+
+    result = get_suggestion("abcde", sample_index)
+    assert result is None
+
+def test_get_suggestion_exact_match(sample_index):
+
+    result = get_suggestion("life", sample_index)
+    assert result == "life"
+
+def test_print_suggest_similar_words(sample_index, capsys):
+
+    print_query(sample_index, "llife")
+    capture = capsys.readouterr()
+    output = capture.out.lower()
+    assert "did you mean" in output
+    assert "life" in output
+
+def test_find_suggest_similar_words(sample_index, capsys):
+
+    find_words(sample_index, ["llife"])
+    capture = capsys.readouterr()
+    output = capture.out.lower()
+    assert "did you mean" in output
+    assert "life" in output

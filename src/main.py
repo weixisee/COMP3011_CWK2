@@ -2,7 +2,8 @@ from crawler import crawl_site
 from indexer import build_index, save_index, load_index
 from search import print_query, find_words
 
-INDEX_PATH = "data/index.json"
+# INDEX_PATH = "data/index.json"
+INDEX_PATH = "data/index_main_only.json"
 BASE_URL = "https://quotes.toscrape.com/"
 
 def main():
@@ -34,6 +35,7 @@ def main():
         
         elif cmd == "load":
             index = load_index(INDEX_PATH)
+            print("Index loaded successfully")
 
         
         elif cmd == "print":
