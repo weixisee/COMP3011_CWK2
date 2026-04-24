@@ -4,11 +4,22 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin, urlparse
 from collections import deque
+from urllib.robotparser import RobotFileParser
 
 
 # input URL
 BASE_URL = "https://quotes.toscrape.com/"
 POLITENESS_WINDOW = 6
+
+def get_robot_parser(base_url: str) -> RobotFileParser:
+    rp = RobotFileParser()
+    rp.set_url(urljoin(base_url, "/robots.txt"))
+    try:
+        rp.read()
+        print(f"[CHECKING]: robots.txt loaded from {base_url}\n")
+    except Exception as e:
+        print(f"[ERROR] Could not load robots.txt: {e}.\n")
+    return rp
 
 
 def fetch_page(url:str, retries: int = 3) -> str | None:
@@ -64,9 +75,16 @@ def crawl_site(start_url: str) -> dict[str, str]:
     visited.add(start_url)
     pages = {}
 
+    # check if there is a robot.txt file
+    robot_file = get_robot_parser(start_url)
+
     while queue:
         
         url = queue.popleft()
+
+        if not robot_file.can_fetch("*", url):
+            print(f"[ROBOT] Skipping {url} becaused robots.txt does not allowed.\n")
+            continue
 
         print(f"Fetching: {url}")
         html = fetch_page(url)
