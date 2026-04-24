@@ -114,3 +114,38 @@ def test_load_index_missing_file():
     
 
 
+# tests for TF-IDF
+def test_build_index_contains_tfidf():
+    pages = {
+        "url1": "<html><body>life is beautiful</body></html>",
+        "url2": "<html><body>life is good</body></html>"
+    }
+
+    index = build_index(pages)
+
+    assert "tf_idf" in index["life"]["url1"]
+    assert "tf_idf" in index["life"]["url2"]
+
+
+def test_build_index_tfidf_is_float():
+    pages = {
+        "url1": "<html><body>life is beautiful</body></html>",
+        "url2": "<html><body>life is good</body></html>"
+    }
+
+    index = build_index(pages)
+
+    assert isinstance(index["life"]["url1"]["tf_idf"], float)
+
+
+def test_build_index_tfidf_rare_word_scores_higher():
+    pages = {
+        "url1": "<html><body>life is beautiful unique</body></html>",
+        "url2": "<html><body>life is good</body></html>"
+    }
+
+    index = build_index(pages)
+
+    # "unique" only appears in url1, "life" appears in both
+    # so "unique" should have higher TF-IDF than "life" in url1
+    assert index["unique"]["url1"]["tf_idf"] > index["life"]["url1"]["tf_idf"]

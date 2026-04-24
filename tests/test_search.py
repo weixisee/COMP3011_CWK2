@@ -9,20 +9,21 @@ sys.path.insert(
 )
 
 from search import find_words, print_query
+from indexer import build_index, save_index, load_index
 
 # define mock data for inverted index
 @pytest.fixture
 def sample_index():
     return {
         "life": {
-            "url1": {"frequency": 2, "positions": [0, 3]},
-            "url2": {"frequency": 1, "positions": [5]},
+            "url1": {"frequency": 2, "positions": [0, 3], "tf_idf": 0.4},
+            "url2": {"frequency": 1, "positions": [5], "tf_idf": 0.2},
         },
         "beautiful": {
-            "url1": {"frequency": 1, "positions": [2]},
+            "url1": {"frequency": 1, "positions": [2], "tf_idf": 0.3},
         },
         "good": {
-            "url2": {"frequency": 1, "positions": [1]},
+            "url2": {"frequency": 1, "positions": [1], "tf_idf": 0.3},
         },
     }
 
@@ -81,4 +82,59 @@ def test_find_empty_query(sample_index):
 def test_find_case_insensitive(sample_index):
     result = find_words(sample_index, ["LiFe"])
     assert set(result) == {"url1", "url2"}
+
+    
+def test_find_words_returns_ranked_results():
+    pages = {
+        "url1": "<html><body>life life life</body></html>",
+        "url2": "<html><body>life</body></html>"
+    }
+
+    index = build_index(pages)
+    result = find_words(index, ["life"])
+
+    assert result[0] == "url2"
+    assert "url1" in result
+
+# integration testing
+def test_integration_build_load_print_find(tmp_path, capsys):
+
+    # mock pages
+    pages = {
+        "url1":"<html><body>life is beautiful</body></html>",
+        "url2": "<html><body>life is good</body></html>",
+        "url3": "<html><body>something completely different</body></html>"
+    }
+
+    # build the index
+    index = build_index(pages)
+
+    # save the index as a json file
+    path = tmp_path/"index.json"
+    save_index(index, str(path))
+
+    # load the index from index.json
+    loaded_index = load_index(path)
+
+    # print query - life
+    print_query(loaded_index, "life")
+    # catch the printed output from the terminal
+    capture = capsys.readouterr()
+    output = capture.out
+    assert "url1" in output
+    assert "url2" in output
+    assert "Frequency" in output
+    assert "Positions" in output
+    assert loaded_index["life"]["url1"]["frequency"] >= 1
+    assert len(loaded_index["life"]["url1"]["positions"]) >= 1
+    assert "url3" not in loaded_index["life"]
+
+    # find query
+    # single word
+    result = find_words(loaded_index, ["life"])
+    assert set(result) == {"url1", "url2"}
+
+    # multiple words - joint
+    result = find_words(loaded_index, ["life", "good"])
+    assert result == ["url2"]
 
