@@ -135,6 +135,15 @@ def test_build_index_case_insensitive():
     index = build_index(pages)
     assert index["hello"]["url1"]["frequency"] == 3
 
+def test_build_index_skips_page_with_no_tokens():
+    pages = {
+        "url1": "<html><body>is are the and</body></html>",  # all stopwords
+        "url2": "<html><body>hello world</body></html>"
+    }
+    index = build_index(pages)
+    assert "hello" in index
+    assert "url1" not in index.get("hello", {})
+
 # ─────────────────────────────────────────────
 # TF-IDF ranking logic
 # ─────────────────────────────────────────────
