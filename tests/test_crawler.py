@@ -11,7 +11,8 @@ sys.path.insert(
     os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "src"))
 )
 
-from crawler import fetch_page, parse_page, extract_links, crawl_site, BASE_URL
+from crawler import fetch_page, parse_page, extract_links, crawl_site, BASE_URL,get_robot_parser
+from urllib.robotparser import RobotFileParser
 
 # ─────────────────────────────────────────────
 # fetch page function
@@ -282,3 +283,39 @@ def test_crawl_site_returns_empty_dict_on_immediate_failure():
             pages = crawl_site(BASE_URL)
 
     assert pages == {}
+
+# ─────────────────────────────────────────────
+# get robots.txt function
+# ─────────────────────────────────────────────
+def test_get_robot_parser_returns_robot_file_parser():
+    with patch("crawler.RobotFileParser.read"):
+        result = get_robot_parser(BASE_URL)
+    assert isinstance(result, RobotFileParser)
+
+
+def test_crawl_site_respects_robots_txt():
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.text = "<html><body>Hello</body></html>"
+
+    with patch("crawler.requests.get", return_value=mock_response):
+        with patch("crawler.time.sleep"):
+            with patch("crawler.RobotFileParser.read"):
+                with patch("crawler.RobotFileParser.can_fetch", return_value=False):
+                    pages = crawl_site(BASE_URL)
+
+    assert pages == {}
+
+
+def test_crawl_site_allows_permitted_urls():
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.text = "<html><body>Hello</body></html>"
+
+    with patch("crawler.requests.get", return_value=mock_response):
+        with patch("crawler.time.sleep"):
+            with patch("crawler.RobotFileParser.read"):
+                with patch("crawler.RobotFileParser.can_fetch", return_value=True):
+                    pages = crawl_site(BASE_URL)
+
+    assert BASE_URL in pages
