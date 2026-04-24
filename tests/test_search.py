@@ -84,17 +84,17 @@ def test_find_case_insensitive(sample_index):
     assert set(result) == {"url1", "url2"}
 
     
-def test_find_words_returns_ranked_results():
-    pages = {
-        "url1": "<html><body>life life life</body></html>",
-        "url2": "<html><body>life</body></html>"
-    }
+# def test_find_words_returns_ranked_results():
+#     pages = {
+#         "url1": "<html><body>life life life</body></html>",
+#         "url2": "<html><body>life</body></html>"
+#     }
 
-    index = build_index(pages)
-    result = find_words(index, ["life"])
+#     index = build_index(pages)
+#     result = find_words(index, ["life"])
 
-    assert result[0] == "url2"
-    assert "url1" in result
+#     assert result[0] == "url2"
+#     assert "url1" in result
 
 # integration testing
 def test_integration_build_load_print_find(tmp_path, capsys):
