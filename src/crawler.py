@@ -18,8 +18,15 @@ def fetch_page(url:str, retries: int = 3) -> str | None:
             response = requests.get(url, timeout=10)
             if response.status_code == 200:
                 return response.text
-            print(f"[WARNING] {url} returned HTTP {response.status_code}.\n")
-            return None
+            elif response.status_code == 404:
+                print(f"[WARNING] {url} not found (404).\n")
+                return None
+            elif response.status_code == 403:
+                print(f"[WARNING] {url} access forbidden (403).\n")
+                return None
+            else:
+                print(f"[WARNING] {url} returned HTTP {response.status_code}.\n")
+                return None
         except requests.exceptions.RequestException as e:
             print(f"[WARNING] Attempt {attempt}/{retries} failed for {url} : {e}")
             if attempt < retries:
