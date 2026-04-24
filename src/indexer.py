@@ -10,7 +10,7 @@ STOPWORDS = {
     "is", "are", "was", "were", "be", "been",
     "of", "to", "in", "on", "for", "with",
     "that", "this", "it", "as", "by",
-    "at", "from"
+    "at", "from", "am"
 }
 
 
@@ -94,10 +94,14 @@ def build_index(pages: dict[str, str]) -> dict:
 # build command to save the index file
 def save_index(index: dict, path:str) -> None:
 
-    with open(path, "w") as f:
-        json.dump(index, f, indent=2)
+    try:
+        with open(path, "w") as f:
+            json.dump(index, f, indent=2)
 
-    print(f"Index saved to {path} ({len(index)} terms)")
+        print(f"[SUCCESS]: Index saved to {path} ({len(index)} terms)")
+    except OSError as e:
+        print(f"[ERROR] Could not save index to {path}: {e}")
+        raise
 
 # load the index from the file
 def load_index(path: str)->dict:
