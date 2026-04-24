@@ -28,6 +28,10 @@ def find_words(index:dict, query_words: list[str]) -> list[str]:
     # tokenise the query phrase
     words= tokenise(" ".join(query_words))
 
+    # return empty list if there is no words left after removing stopwords, special characters
+    if not words:
+        return []
+
     results_pages = []
 
     for word in words:
@@ -35,9 +39,6 @@ def find_words(index:dict, query_words: list[str]) -> list[str]:
             print(f"{word} not found in index")
             return []
         results_pages.append(set(index[word].keys()))
-
-    if len(results_pages) == 1:
-        return list(results_pages[0])
     
     # conjustive queries
     intersected_pages = set.intersection(* results_pages)

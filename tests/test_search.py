@@ -28,6 +28,10 @@ def sample_index():
     }
 
 
+# ─────────────────────────────────────────────
+# print query function
+# ─────────────────────────────────────────────
+
 def test_print_query_existing_word(sample_index, capsys):
     print_query(sample_index, "life")
 
@@ -48,6 +52,22 @@ def test_print_query_word_not_found(sample_index, capsys):
 
     assert "not in index" in output
 
+def test_print_query_empty_string(sample_index, capsys):
+    print_query(sample_index, "")
+
+    captured = capsys.readouterr()
+    output = captured.out.lower()
+
+    assert "not in index" in output
+
+def test_print_query_special_char(sample_index, capsys):
+    print_query(sample_index, "??")
+
+    captured = capsys.readouterr()
+    output = captured.out.lower()
+
+    assert "not in index" in output
+
 
 def test_print_query_case_insensitive(sample_index, capsys):
     print_query(sample_index, "LiFe")
@@ -58,6 +78,9 @@ def test_print_query_case_insensitive(sample_index, capsys):
     assert "URL: url1" in output
     assert "URL: url2" in output
 
+# ─────────────────────────────────────────────
+# find words function
+# ─────────────────────────────────────────────
 
 def test_find_single_word(sample_index):
     result = find_words(sample_index, ["life"])
@@ -83,18 +106,21 @@ def test_find_case_insensitive(sample_index):
     result = find_words(sample_index, ["LiFe"])
     assert set(result) == {"url1", "url2"}
 
-    
-# def test_find_words_returns_ranked_results():
-#     pages = {
-#         "url1": "<html><body>life life life</body></html>",
-#         "url2": "<html><body>life</body></html>"
-#     }
+def test_find_stopword(sample_index):
+    result = find_words(sample_index, ["and"])
+    assert result == []
 
-#     index = build_index(pages)
-#     result = find_words(index, ["life"])
+def test_find_single_char(sample_index):
+    result = find_words(sample_index, ["a", "b", "c", "d"])
+    assert result == []
 
-#     assert result[0] == "url2"
-#     assert "url1" in result
+def test_find_special_char(sample_index):
+    result = find_words(sample_index, [">?"])
+    assert result == []
+
+def test_find_no_intersected_page(sample_index):
+    result = find_words(sample_index, ["Beautiful", "Good"])
+    assert result == []
 
 # integration testing
 def test_integration_build_load_print_find(tmp_path, capsys):
