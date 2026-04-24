@@ -13,6 +13,9 @@ sys.path.insert(
 
 from crawler import fetch_page, parse_page, extract_links, crawl_site, BASE_URL
 
+# ─────────────────────────────────────────────
+# fetch page function
+# ─────────────────────────────────────────────
 def test_fetch_page_success():
     
     mock_response = Mock()
@@ -59,16 +62,32 @@ def test_fetch_page_connection_error():
     assert result is None
 
 
-def test_fetch_page_http_error():
-    mock_response = Mock()
-    mock_response.raise_for_status.side_effect = requests.HTTPError()
+def test_fetch_page_retries_on_failure():
+    # First two attempts fail, third succeeds
+    mock_success = Mock()
+    mock_success.status_code = 200
+    mock_success.text = "<html><body>Success</body></html>"
 
-    with patch("crawler.requests.get", return_value=mock_response):
-        result = fetch_page("https://quotes.toscrape.com/badpage")
+    with patch("crawler.requests.get", side_effect=[
+        requests.exceptions.ConnectionError,
+        requests.exceptions.ConnectionError,
+        mock_success
+    ]):
+        with patch("crawler.time.sleep"):
+            result = fetch_page("https://quotes.toscrape.com/")
+
+    assert result == "<html><body>Success</body></html>"
+
+def test_fetch_page_returns_none_after_all_retries_fail():
+    with patch("crawler.requests.get", side_effect=requests.exceptions.ConnectionError):
+        with patch("crawler.time.sleep"):
+            result = fetch_page("https://quotes.toscrape.com/", retries=3)
 
     assert result is None
 
-# parse page
+# ─────────────────────────────────────────────
+# parse page function
+# ─────────────────────────────────────────────
 def test_parse_page_returns_beautifulsoup():
     result = parse_page("<html><body><p>Hello</p></body></html>")
 
@@ -92,7 +111,9 @@ def test_parse_page_finds_links():
 
     assert result.find("a")["href"] == "/page/2"
 
-# extract links
+# ─────────────────────────────────────────────
+# extract link function
+# ─────────────────────────────────────────────
 def test_extract_links_absolute_internal():
     soup = BeautifulSoup(
         '<a href="https://quotes.toscrape.com/page/2">Next</a>',
@@ -156,6 +177,9 @@ def test_extract_links_returns_multiple_links():
 
     assert len(links) == 2
 
+# ─────────────────────────────────────────────
+# crawl page function
+# ─────────────────────────────────────────────
 def test_crawl_site_stores_fetched_page():
     mock_response = Mock()
     mock_response.status_code = 200
@@ -233,3 +257,28 @@ def test_crawl_site_returns_dict():
             pages = crawl_site(BASE_URL)
 
     assert isinstance(pages, dict)
+
+def test_crawl_site_network_error():
+    page1 = Mock()
+    page1.status_code = 200
+    page1.text = '<html><body><a href="/page/2">Next</a></body></html>'
+
+    with patch("crawler.requests.get", side_effect=[
+        page1,
+        requests.exceptions.ConnectionError,
+        requests.exceptions.ConnectionError,
+        requests.exceptions.ConnectionError,
+    ]):
+        with patch("crawler.time.sleep"):
+            pages = crawl_site(BASE_URL)
+    
+    assert len(pages) == 1
+    assert BASE_URL in pages
+
+
+def test_crawl_site_returns_empty_dict_on_immediate_failure():
+    with patch("crawler.requests.get", side_effect=requests.exceptions.ConnectionError):
+        with patch("crawler.time.sleep"):
+            pages = crawl_site(BASE_URL)
+
+    assert pages == {}

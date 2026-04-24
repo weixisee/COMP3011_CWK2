@@ -33,6 +33,9 @@ def test_extract_text_removes_html_and_scripts():
     assert "alert" not in text
     assert "color:red" not in text
 
+# ─────────────────────────────────────────────
+# tokenise functions
+# ─────────────────────────────────────────────
 
 def test_tokenise_basic():
     text = "The Life is Beautiful!"
@@ -49,6 +52,22 @@ def test_tokenise_empty_string():
     tokens = tokenise("")
     assert tokens == []
 
+def test_tokenise_special_characters():
+    tokens = tokenise("!!! ?< #?")
+    assert tokens == []
+
+def test_tokenise_single_characters():
+    tokens = tokenise("a b c d")
+    assert tokens == []
+
+def test_tokenise_stopwords():
+    tokens = tokenise("is are am")
+    assert tokens == []
+
+# ─────────────────────────────────────────────
+# build index functions
+# ─────────────────────────────────────────────
+
 
 def test_build_index_single_page():
     pages = {
@@ -62,6 +81,15 @@ def test_build_index_single_page():
     assert index["life"]["url1"]["frequency"] == 2
     assert index["life"]["url1"]["positions"] == [0, 2]
 
+def test_build_index_single_word():
+    pages = {
+        "url1": "<html><body>extraordinary</body></html>"
+    }
+    
+    index =  build_index(pages)
+    assert "extraordinary" in index
+    assert index["extraordinary"]["url1"]["frequency"] == 1
+    assert index["extraordinary"]["url1"]["positions"] == [0]
 
 def test_build_index_multiple_pages():
     pages = {
@@ -88,33 +116,38 @@ def test_build_index_skips_empty_html():
     assert "world" in index
     assert "url1" not in index.get("hello", {})
 
+def test_build_index_empty_string_html():
 
-def test_save_and_load_index(tmp_path):
-    index = {
-        "life": {
-            "url1": {
-                "frequency": 1,
-                "positions": [0]
-            }
-        }
+    pages = {
+        "url1": "<html><body>It is never too late to be what you might have been.</body></html>",
+        "url2": ""
     }
 
-    path = tmp_path / "index.json"
+    index = build_index(pages)
+    assert "late" in index
+    assert "url2" not in index.get("late", {})
 
-    save_index(index, path)
-    loaded = load_index(path)
+def test_build_index_case_insensitive():
+    pages = {
+        "url1": "<html>hello Hello HELLO</html>"
+    }
 
-    assert loaded == index
+    index = build_index(pages)
+    assert index["hello"]["url1"]["frequency"] == 3
 
+def test_build_index_skips_page_with_no_tokens():
+    pages = {
+        "url1": "<html><body>is are the and</body></html>",  # all stopwords
+        "url2": "<html><body>hello world</body></html>"
+    }
+    index = build_index(pages)
+    assert "hello" in index
+    assert "url1" not in index.get("hello", {})
 
-def test_load_index_missing_file():
-    
-    with pytest.raises(FileNotFoundError):
-        load_index("non_existent_index.json")
-    
+# ─────────────────────────────────────────────
+# TF-IDF ranking logic
+# ─────────────────────────────────────────────
 
-
-# tests for TF-IDF
 def test_build_index_contains_tfidf():
     pages = {
         "url1": "<html><body>life is beautiful</body></html>",
@@ -149,3 +182,66 @@ def test_build_index_tfidf_rare_word_scores_higher():
     # "unique" only appears in url1, "life" appears in both
     # so "unique" should have higher TF-IDF than "life" in url1
     assert index["unique"]["url1"]["tf_idf"] > index["life"]["url1"]["tf_idf"]
+
+# ─────────────────────────────────────────────
+# Save and Load Index function
+# ─────────────────────────────────────────────
+
+def test_save_index_create_file(tmp_path):
+    index = {"life": {"url1": {"frequency": 1, "positions": [0], "tf_idf": 0.5}}}
+    path = tmp_path/"index.json"
+    save_index(index, str(path))
+    assert path.exists()
+
+def test_save_index_invalid_path():
+    index = {"life": {"url1": {"frequency": 1, "positions": [0], "tf_idf": 0.5}}}
+    with pytest.raises(OSError):
+        save_index(index, "/invalid/path/index.json")
+
+def test_save_and_load_index(tmp_path):
+    index = {
+        "life": {
+            "url1": {
+                "frequency": 1,
+                "positions": [0]
+            }
+        }
+    }
+
+    path = tmp_path / "index.json"
+
+    save_index(index, path)
+    loaded = load_index(path)
+
+    assert loaded == index
+
+def test_save_and_load_empty_index(tmp_path):
+    index = {}
+
+    path = tmp_path /"index.json"
+
+    save_index(index, path)
+    loaded = load_index(path)
+
+    assert loaded == {}
+
+def test_load_index_missing_file():
+    
+    with pytest.raises(FileNotFoundError):
+        load_index("non_existent_index.json")
+
+def test_load_index_return_type(tmp_path):
+    index = {"life": {"url1": {"frequency": 1, "positions": [0], "tf_idf": 0.5}}}
+
+    path = tmp_path/"index.json"
+
+    save_index(index, path)
+    loaded_index = load_index(path)
+    assert isinstance(loaded_index, dict)
+
+    
+
+
+
+    
+
