@@ -16,6 +16,16 @@ STOPWORDS = {
 
 # extracting the text 
 def extract_text(html: str) -> str:
+
+    """
+    Extract plain text from raw HTML and remove the contents related to script and style
+
+    Args:
+        html: raw HTML contents
+
+    Returns:
+        plain text string with scripts and styles removed
+    """
  
     soup = BeautifulSoup(html, "html.parser")
 
@@ -28,6 +38,19 @@ def extract_text(html: str) -> str:
 
 # tokenisation 
 def tokenise(text: str) -> list[str]:
+
+    """
+    tokenise the plain text string by turning them into lowercase,
+    remove punctuation and stopwords
+
+    Time Complexity: O(N) where N represenets the number of characters in the text
+
+    Args:
+        text: The plain text string to tokenise
+
+    Returns:
+        A list of cleaned and lowrcased words after tokenisation
+    """
 
     # lowercasing all the letters
     text = text.lower()
@@ -43,6 +66,35 @@ def tokenise(text: str) -> list[str]:
 
 # build the inverted index
 def build_index(pages: dict[str, str]) -> dict:
+
+    """
+    Build an inverted index from a dictionary of crawled pages
+
+    For each word, the pages it appears along with the frequency, positions and TF-IDF scores are stored
+
+    TF  = frequency / total_tokens in document
+    IDF = log(total_documents / documents_containing_term)
+    TF-IDF = TF * IDF
+
+    Time complexity: O(N) where N = total tokens across all pages.
+    Space complexity: O(W * D) where W = unique words, D = total documents.
+
+    Args:
+        pages: the dictionary that mapped the visited URLs to their respective raw HTML content
+
+    Returns:
+
+        Dictionary storing the inverted index with the following structure:
+            {
+            word: {
+                url: {
+                    frequency: int,
+                    positions: list[int],
+                    tf_idf: float
+                    }
+                }
+            }
+    """
 
     index = {}
     # find the total number of pages
@@ -94,6 +146,18 @@ def build_index(pages: dict[str, str]) -> dict:
 # build command to save the index file
 def save_index(index: dict, path:str) -> None:
 
+    """
+    Saves the inverted index to a JSON file.
+
+    Args:
+        index: The inverted index dictionary to save.
+        path: File path to save the index to.
+
+    Raises:
+        OSError: If the file cannot be written (invalid path, 
+        permission denied, no disk space).
+    """
+
     try:
         with open(path, "w") as f:
             json.dump(index, f, indent=2)
@@ -105,6 +169,19 @@ def save_index(index: dict, path:str) -> None:
 
 # load the index from the file
 def load_index(path: str)->dict:
+
+    """
+    Loads the inverted index from a JSON file.
+
+    Args:
+        path: File path to load the index from.
+
+    Returns:
+        the inverted index dictionary.
+
+    Raises:
+        FileNotFoundError: If no index file exists at the given path.
+    """
 
     try: 
         with open(path, "r") as f:

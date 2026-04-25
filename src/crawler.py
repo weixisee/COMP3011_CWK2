@@ -12,6 +12,18 @@ BASE_URL = "https://quotes.toscrape.com/"
 POLITENESS_WINDOW = 6
 
 def get_robot_parser(base_url: str) -> RobotFileParser:
+    """
+    Fetch and parse the robots.txt file of the targeted website
+
+    Args:
+        base_url (str): the base url of the website to crawl
+
+    Returns:
+        RobotFileParser: A RobotFileParser object that check URL permissions. 
+        If there is no robots.txt file, it will return empty parser that allows 
+        all the URLs.
+    """
+
     rp = RobotFileParser()
     rp.set_url(urljoin(base_url, "/robots.txt"))
     try:
@@ -24,6 +36,17 @@ def get_robot_parser(base_url: str) -> RobotFileParser:
 
 def fetch_page(url:str, retries: int = 3) -> str | None:
 
+    """
+    Fetch the page of the given url with retry logic. There is up to 3 retry opportunities
+    of a 2 seconds interval. 
+
+    Args:
+        url: the url of the page to fetch
+        retries: Number of retry attempts on failure
+
+    Returns:
+        HTML content in string if successful, None otherwise
+    """
     for attempt in range (1, retries + 1):
         try:
             response = requests.get(url, timeout=10)
@@ -48,9 +71,30 @@ def fetch_page(url:str, retries: int = 3) -> str | None:
 
 def parse_page(html:str) -> BeautifulSoup:
 
+    """
+    Parse the raw HTML contents into a Beautiful Soap object
+
+    Args:
+        html: raw HTML contents in string data type 
+
+    Returns:
+        A BeautifulSoap object that represents the parsed HTML contents
+    """
+
     return BeautifulSoup(html, 'html.parser')
 
 def extract_links (soup: BeautifulSoup, current_url: str) -> list[str]:
+
+    """
+    Extract all the links exist in the parsed HTMl contents 
+
+    Args: 
+        soup: Parsed HTML content of the page
+        current_url: the url of the current page that is being extracted for links
+
+    Returns:
+        A list of URLs found in the current page stored as string
+    """
 
     links = []
 
@@ -68,6 +112,21 @@ def extract_links (soup: BeautifulSoup, current_url: str) -> list[str]:
     
 
 def crawl_site(start_url: str) -> dict[str, str]:
+
+    """
+    Crawl the website starting from the start_url using BFS
+
+    Respects the robots.txt rule and the politeness window of 6s between each requests
+
+    Time Complexity: O(N) where N represents the number of pages being crawled
+    Space Complexity: O(N) for storing the visited URL and its raw HTML content
+
+    Args:
+        start_url: the URL the program starts crawling from
+
+    Returns:
+       A dictionary that maps each URL to its raw HTML content
+    """
 
     # manage the url links, visited url links, and politeness request
     visited = set()
