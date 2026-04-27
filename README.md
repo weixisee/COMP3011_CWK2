@@ -101,17 +101,19 @@ Index loaded successfully
 
 **print <word>**
 
-The print command will print the index for a given word. It will return the page that contains the words with its frequency and positions. It is ranked based on the TF-IDF score.
+The print command will print the index for a given word. It will return the page that contains the words with its frequency, positions and tf-idf scores. It is ranked based on the TF-IDF score.
 
 ```
 > print integrity
-URL: https://quotes.toscrape.com/page/9/
-Frequency: 1
-Positions: [75]
-
 URL: https://quotes.toscrape.com/tag/integrity/page/1/
 Frequency: 2
 Positions: [7, 44]
+TF-IDF: 0.1483
+
+URL: https://quotes.toscrape.com/page/9/
+Frequency: 1
+Positions: [75]
+TF-IDF: 0.0172
 ```
 
 ```
