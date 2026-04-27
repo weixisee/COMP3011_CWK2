@@ -157,6 +157,8 @@ pytest tests/ -v
 - Unit Test - tested each function independently with mock data
 - Integration Test - tested the whole pipeline to ensure all components work together (build, save, load, print/find)
 - Edge Case Test - Tested edge cases such as empty string or empty page, special characters, single characters
+- Performance Test - Tested the index building and searching functions complete within acceptable time limits (search < 1s, build < 5s across 100 pages)
 - Mocking - Used unittest.mock to mock HTTP requests to make sure no real network calles during testing stage
+  
 
 
