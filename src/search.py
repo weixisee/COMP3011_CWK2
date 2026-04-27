@@ -5,19 +5,19 @@ import difflib
 def get_suggestion(word: str, index: dict) -> str | None:
 
     """
-    Finds the closest matching word in the index using fuzzy matching.
+    Provide suggestion of the closest mathcing word in the index. 
 
-    Uses difflib.get_close_matches with a similarity cutoff of 0.6
-    to suggest corrections for misspelled query words.
+    Uses difflib.get_close_matches with a similariy cutoff of 0.6 to suggest
+    corrections or misspelled query words. 
 
-    Time complexity: O(W) where W = number of unique words in index.
+    Time complexity: O(N) where N represents the number of unique words in index
 
     Args:
-        word: The misspelled or unrecognised query word.
-        index: The inverted index to search for suggestions.
+        word: the misspelled or unrecognised word provide by user
+        index: the dictionary that stores the inverted index to search for suggestions
 
     Returns:
-        The closest matching word if similarity > 0.6, None otherwise.
+        the closest matching word if similariy > 0.6, None otherwise
     """
 
     suggestions = difflib.get_close_matches(word, index.keys(), n=1, cutoff=0.6)
@@ -26,15 +26,13 @@ def get_suggestion(word: str, index: dict) -> str | None:
 def print_query(index:dict, query_word:str) -> None:
 
     """
-    Prints the inverted index entry for a given word.
+        Print the inverted index for a particular word entered by the user
 
-    Displays all pages the word appears in, along with frequency,
-    positions and TF-IDF score. If the word is not found, suggests
-    a similar word if one exists.
-
-    Args:
-        index: The inverted index dictionary.
-        query_word: The word to look up in the index.
+        It will return all the pages the word appears in along with its frequency, positions and TF-IDF score.
+        
+        Args:
+            index: the dictionary that store the inverted index
+            query_word: the word to look up in the index
     """
     query_word = query_word.lower()
 
@@ -62,24 +60,22 @@ def print_query(index:dict, query_word:str) -> None:
 def find_words(index:dict, query_words: list[str]) -> list[str]:
 
     """
-    Finds pages containing all query words, ranked by TF-IDF score.
+    Find a given query phrase in the inverted index and returns a list of all pages that contain it, 
+    ranked by the TF-IDF score. 
 
-    Tokenises the query, removes stopwords and special characters,
-    then returns pages containing ALL query words (conjunctive search),
-    sorted by combined TF-IDF relevance score (highest first).
+    It will return pages containing ALL query words sorted by TF-IDF relevance score (highest first).
 
-    If a query word is not found, suggests a similar word if one exists.
-
-    Time complexity: O(Q * D) where Q = query words, D = documents per word.
-    Space complexity: O(D) for the results list.
+    Time Complexity: O(W * D) where W represents the number of query words and D represents the number of documents per words
+    Space Complexity O(D) for the results list
 
     Args:
-        index: The inverted index dictionary.
-        query_words: List of query words to search for.
+        index: The dictionary that stores the inverted index
+        query_words: List of query words to seaerch for 
+
 
     Returns:
-        A list of URLs sorted by relevance (highest TF-IDF first).
-        Returns empty list if any query word is not found.
+        A list of URLs sorted by relevane with highest TF-IDF first. It will return an empty list if any of the query word
+        is not found. 
     """
 
     if not query_words:
