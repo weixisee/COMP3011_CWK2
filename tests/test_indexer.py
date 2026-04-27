@@ -4,6 +4,7 @@ import sys
 import os
 from unittest.mock import Mock, patch
 from bs4 import BeautifulSoup
+import time
 
 
 sys.path.insert(
@@ -239,7 +240,24 @@ def test_load_index_return_type(tmp_path):
     loaded_index = load_index(path)
     assert isinstance(loaded_index, dict)
 
-    
+def test_build_index_performance():
+    """
+    Performance test: building an index from 100 pages should
+    complete in under 5 seconds.
+    """
+    pages = {
+        f"url{i}": f"<html><body>life is beautiful word{i} amazing</body></html>"
+        for i in range(100)
+    }
+
+    start = time.time()
+    index = build_index(pages)
+    end = time.time()
+
+    elapsed = end - start
+
+    assert elapsed < 5.0, f"Index build took too long: {elapsed:.3f}s"
+    assert "life" in index
 
 
 
