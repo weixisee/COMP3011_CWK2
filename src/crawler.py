@@ -166,8 +166,8 @@ def crawl_site(start_url: str) -> dict[str, str]:
     print(f"[COMPLETED] Crawl complete. {len(pages)} pages fetched.\n")
     return pages
 
-if __name__ == "__main__":
-    crawl_site(BASE_URL)
+# if __name__ == "__main__":
+#     crawl_site(BASE_URL)
 
 
 

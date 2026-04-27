@@ -38,8 +38,6 @@ def print_query(index:dict, query_word:str) -> None:
     """
     query_word = query_word.lower()
 
-    query_word = query_word.lower()
-
     if query_word not in index:
         suggestion = get_suggestion(query_word, index)
         if suggestion:
@@ -50,10 +48,14 @@ def print_query(index:dict, query_word:str) -> None:
     
     result = index[query_word]
 
-    for url, data in result.items():
+    # sort and print the results based on tf-idf scores
+    sorted_results = sorted(result.items(), key=lambda x: x[1]["tf_idf"], reverse=True)
+
+    for url, data in sorted_results:
         print(f"URL: {url}")
         print(f"Frequency: {data['frequency']}")
         print(f"Positions: {data['positions']}")
+        print(f"TF-IDF: {data['tf_idf']}")
         print()
 
 # # find a given query phrase in the inverted index
