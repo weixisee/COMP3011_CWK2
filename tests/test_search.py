@@ -1,6 +1,7 @@
 import pytest
 import sys
 import os
+import time
 
 # Allow tests to import from src/
 sys.path.insert(
@@ -198,3 +199,24 @@ def test_find_suggest_similar_words(sample_index, capsys):
     output = capture.out.lower()
     assert "did you mean" in output
     assert "life" in output
+
+def test_search_performance():
+    """
+    Performance test: searching across a large index should
+    complete in under 1 second.
+    """
+    pages = {
+        f"url{i}": f"<html><body>life is beautiful word{i} amazing</body></html>"
+        for i in range(100)
+    }
+
+    index = build_index(pages)
+
+    start = time.time()
+    result = find_words(index, ["life"])
+    end = time.time()
+
+    elapsed = end - start
+
+    assert elapsed < 1.0, f"Search took too long: {elapsed:.3f}s"
+    assert len(result) == 100
