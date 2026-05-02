@@ -102,9 +102,6 @@ def extract_links (soup: BeautifulSoup, current_url: str) -> list[str]:
         absolute = urljoin(current_url, tag["href"])
         parsed = urlparse(absolute)
 
-        # if "/author/" in absolute or "/tag/" in absolute:
-        #     continue
-
         if parsed.netloc == urlparse(BASE_URL).netloc:
             links.append(absolute)
         
@@ -165,10 +162,6 @@ def crawl_site(start_url: str) -> dict[str, str]:
 
     print(f"[COMPLETED] Crawl complete. {len(pages)} pages fetched.\n")
     return pages
-
-# if __name__ == "__main__":
-#     crawl_site(BASE_URL)
-
 
 
 
