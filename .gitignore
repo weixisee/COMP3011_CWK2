@@ -22,6 +22,9 @@ htmlcov/
 .DS_Store
 Thumbs.db
 
-# Index file (submitted separately, not in repo)
-data/*.json
+# Index file 
+# data/*.json
 data/*.pkl
+
+.coveragec
+setup.cfg

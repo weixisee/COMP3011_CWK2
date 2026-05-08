@@ -100,7 +100,7 @@ def find_words(index:dict, query_words: list[str]) -> list[str]:
             return []
         results_pages.append(set(index[word].keys()))
     
-    # conjustive queries
+    # conjunctive queries
     intersected_pages = set.intersection(* results_pages)
 
     def score(url):
